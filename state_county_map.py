@@ -22,6 +22,10 @@ sc_counties['color'] = sc_counties['NAME'].apply(lambda x: 'red' if x in upstate
 fig, ax = plt.subplots(1, 1, figsize=(10, 10))
 sc_counties.plot(ax=ax, color=sc_counties['color'], edgecolor='black')
 
+for idx, row in sc_counties.iterrows():
+    plt.annotate(text=row['NAME'], xy=(row.geometry.centroid.x, row.geometry.centroid.y),
+                 ha='center', fontsize=6, color='black')
+
 # Add a title and show the plot
 plt.title("Upstate South Carolina Counties - Selected Counties Shaded Red", fontsize=15)
 plt.axis('off')  # Hide axes
