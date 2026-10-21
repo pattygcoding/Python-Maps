@@ -13,6 +13,7 @@
     "data": "python scripts/build_data.py",
     "data:inspect": "python scripts/inspect_data.py",
     "verify:python": "node --experimental-strip-types scripts/verify_python.mjs",
+    "verify:live": "node scripts/check_live.mjs",
     "verify": "npm run check && npm run build && npm run verify:python"
   },
   "devDependencies": {
