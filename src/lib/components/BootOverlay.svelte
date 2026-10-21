@@ -4,18 +4,23 @@
 
   const { studio }: { studio: Studio } = $props();
 
+  // Ordered exactly as the worker reports them: the current step is derived from
+  // the index of the reported stage id, so the list and the worker must agree.
   const STAGES: { id: string; label: string }[] = [
     { id: 'runtime', label: 'Python runtime' },
     { id: 'packages', label: 'GeoPandas, Shapely, pyproj, matplotlib' },
+    { id: 'python', label: 'Importing the libraries' },
     { id: 'data', label: 'County boundaries' },
-    { id: 'python', label: 'Python session' },
   ];
 
+  // 'ready' is not one of the steps, so it means every step is finished.
   const currentIndex = $derived(
-    Math.max(
-      0,
-      STAGES.findIndex((stage) => stage.id === studio.progress.stage),
-    ),
+    studio.progress.stage === 'ready'
+      ? STAGES.length
+      : Math.max(
+          0,
+          STAGES.findIndex((stage) => stage.id === studio.progress.stage),
+        ),
   );
 </script>
 

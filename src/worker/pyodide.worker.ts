@@ -68,16 +68,24 @@ function progress(stage: BootStage, message: string, pct: number | null = null):
 /* -------------------------------------------------------------------------- */
 
 /**
- * Runs once.  Establishes the Agg backend (there is no display in a browser) and
- * the rcParams the studio wants rather than the map author.  Deliberately not part
- * of the script shown in the drawer, which should stay portable to a desktop.
+ * The imports are split across two calls on purpose.
+ *
+ * `import geopandas` drags in pandas, shapely, pyproj and fiona and is by far the
+ * longest single step of the boot -- measured at ~2.3 s, against ~1.3 s for
+ * matplotlib.  Running them as one blob gave the progress bar nothing to report
+ * between "installing wheels" and "ready", which is what made it sit at 88% and
+ * look stuck when it was in fact working.
  */
-const INIT_PY = `
-import base64, io, json, sys, time, warnings
+const GEOPANDAS_PY = `
+import base64, io, json, sys, warnings
+import geopandas as gpd
+import fiona, pyproj, shapely
+`;
+
+const MATPLOTLIB_PY = `
 import matplotlib
 matplotlib.use("AGG")
 import matplotlib.pyplot as plt
-import geopandas as gpd, fiona, pyproj, shapely
 
 plt.rcParams["savefig.facecolor"] = "auto"
 plt.rcParams["font.family"] = "DejaVu Sans"
@@ -89,6 +97,22 @@ plt.rcParams["font.family"] = "DejaVu Sans"
 warnings.filterwarnings(
     "ignore", message=".*parameter as float was deprecated.*", category=DeprecationWarning
 )
+`;
+
+/**
+ * Parses the boundaries once and keeps them for the life of the worker.
+ *
+ * This is the single biggest render-time win: the generated script used to call
+ * `read_file` on the 3.79 MB GeoJSON every time, which measured ~0.5-0.8 s per
+ * render and reallocated a 3,235-polygon frame each time.  The generated script
+ * now prefers this cached frame and only falls back to reading the file when it
+ * is run outside the studio.
+ */
+const LOAD_PY = `
+BOUNDARIES = gpd.read_file("/data/us_counties.geojson", engine="fiona")
+BOUNDARIES["STATEFP"] = BOUNDARIES["STATEFP"].astype(str).str.zfill(2)
+BOUNDARIES["COUNTYFP"] = BOUNDARIES["COUNTYFP"].astype(str).str.zfill(3)
+COUNTY_COUNT = len(BOUNDARIES)
 `;
 
 const PROBE_PY = `
@@ -179,37 +203,70 @@ function formatBytes(bytes: number): string {
 async function boot(dataUrl: string): Promise<ProbeResult> {
   const started = performance.now();
 
+  // Kick the dataset off first.  It is a 3.79 MB download that the browser handles
+  // off-thread, so starting it here overlaps it with the runtime and wheel
+  // downloads below and hides essentially all of it.
+  const dataPromise = fetch(dataUrl).then(async (response) => {
+    if (!response.ok) {
+      throw new Error(`Could not load ${dataUrl} (HTTP ${response.status})`);
+    }
+    return new Uint8Array(await response.arrayBuffer());
+  });
+  dataPromise.catch(() => {
+    // Rejection is surfaced where it is awaited; this only stops an early failure
+    // from being reported as an unhandled rejection first.
+  });
+
   progress('runtime', 'Downloading the Python runtime…', 4);
   const module = (await import(/* @vite-ignore */ `${PYODIDE_INDEX}pyodide.mjs`)) as {
     loadPyodide(options: { indexURL: string }): Promise<PyodideApi>;
   };
   pyodide = await module.loadPyodide({ indexURL: PYODIDE_INDEX });
 
-  const seen = new Set<string>();
+  // The wheel count comes from Pyodide's own "Loading a, b, c" message rather than
+  // a hard-coded guess, so the bar stays correct across version bumps.  Progress is
+  // driven from both callbacks: the message callback guarantees the bar moves even
+  // when every wheel is already in the HTTP cache and progressCallback never fires.
+  let expectedWheels = 0;
+  let loadedWheels = 0;
+  const packagesPct = (): number =>
+    expectedWheels ? 12 + Math.round((loadedWheels / expectedWheels) * 58) : 12;
+
   await pyodide.loadPackage(PACKAGES, {
+    messageCallback: (message) => {
+      const loading = /^Loading (.+)$/.exec(message);
+      if (loading) {
+        expectedWheels = loading[1].split(',').length;
+        progress('packages', `Installing ${expectedWheels} wheels…`, packagesPct());
+      }
+      const loaded = /^Loaded (.+)$/.exec(message);
+      if (loaded) {
+        loadedWheels = loaded[1].split(',').length;
+        progress(
+          'packages',
+          `${loadedWheels} of ${expectedWheels} wheels ready…`,
+          packagesPct(),
+        );
+      }
+    },
     progressCallback: (item) => {
-      if (item.name) seen.add(item.name);
-      // Coarse but honest: interpolate across the packages resolved so far, and
-      // show exact byte counts for whatever is downloading right now.
-      const share = Math.min(seen.size / 12, 1);
       const detail = item.total
         ? `${item.name} — ${formatBytes(item.loaded)} of ${formatBytes(item.total)}`
         : item.name;
-      progress('packages', `Installing ${detail}…`, 12 + Math.round(share * 58));
+      progress('packages', `Installing ${detail}…`, packagesPct());
     },
   });
 
-  progress('data', 'Loading U.S. county boundaries…', 76);
-  const response = await fetch(dataUrl);
-  if (!response.ok) {
-    throw new Error(`Could not load ${dataUrl} (HTTP ${response.status})`);
-  }
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  pyodide.FS.mkdirTree('/data');
-  pyodide.FS.writeFile(DATA_PATH, bytes);
+  progress('python', 'Importing geopandas, pandas and fiona…', 72);
+  await pyodide.runPythonAsync(GEOPANDAS_PY);
 
-  progress('python', 'Starting the Python session…', 88);
-  await pyodide.runPythonAsync(INIT_PY);
+  progress('python', 'Importing matplotlib…', 84);
+  await pyodide.runPythonAsync(MATPLOTLIB_PY);
+
+  progress('data', 'Parsing the county boundaries…', 90);
+  pyodide.FS.mkdirTree('/data');
+  pyodide.FS.writeFile(DATA_PATH, await dataPromise);
+  await pyodide.runPythonAsync(LOAD_PY);
 
   const raw = (await pyodide.runPythonAsync(PROBE_PY)) as string;
   const probe = JSON.parse(raw) as Omit<ProbeResult, 'pyodide' | 'bootMs'>;

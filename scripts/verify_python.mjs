@@ -146,6 +146,24 @@ py.FS.mkdirTree('/data');
 py.FS.writeFile('/data/us_counties.geojson', bytes);
 console.log(`\nStaged ${(bytes.length / 1024 / 1024).toFixed(2)} MB of county boundaries\n`);
 
+async function timeIt(fn) {
+  const t0 = Date.now();
+  await fn();
+  return Date.now() - t0;
+}
+
+// The worker parses the boundaries once and exposes them as BOUNDARIES, and the
+// generated script prefers that frame.  Mirroring it here means the variants below
+// exercise the same path the browser does, instead of the desktop fallback.
+const parseMs = await timeIt(() =>
+  py.runPythonAsync(`
+BOUNDARIES = gpd.read_file("/data/us_counties.geojson", engine="fiona")
+BOUNDARIES["STATEFP"] = BOUNDARIES["STATEFP"].astype(str).str.zfill(2)
+BOUNDARIES["COUNTYFP"] = BOUNDARIES["COUNTYFP"].astype(str).str.zfill(3)
+`),
+);
+console.log(`Parsed the boundaries once: ${parseMs} ms (paid at boot, not per render)\n`);
+
 const variants = [
   { label: 'SC / two groups / Albers 5070', config: {}, rules: scRules },
   {
@@ -212,6 +230,31 @@ base64.b64encode(_buffer.getvalue()).decode("ascii")
   );
 } catch (error) {
   report('SVG export', false, String(error).split('\n').slice(-2).join(' | '));
+}
+
+// The generated script prefers the studio's cached frame but must still run on a
+// desktop, so removing BOUNDARIES has to fall back to reading the GeoJSON.  This
+// is the test that keeps the drawer's promise that its script is runnable.
+console.log('\nStandalone fallback (the script run outside the studio)');
+try {
+  py.runPython('globals().pop("BOUNDARIES", None)');
+  // The fallback reads "us_counties.geojson" relative to the working directory.
+  py.FS.writeFile('/home/pyodide/us_counties.geojson', bytes);
+  const standaloneMs = await timeIt(() =>
+    py.runPythonAsync(generateScript(baseConfig, scRules)),
+  );
+  const stats = JSON.parse(await py.runPythonAsync(STATS_PY));
+  report(
+    'runs without BOUNDARIES defined',
+    stats.counties === 46 && stats.unmatched.length === 0,
+    `${stats.counties} counties in ${standaloneMs} ms (re-reads the file, as a desktop would)`,
+  );
+} catch (error) {
+  report(
+    'standalone fallback',
+    false,
+    String(error).split('\n').slice(-3).join(' | '),
+  );
 }
 
 console.log(`\n${failures === 0 ? 'All checks passed.' : `${failures} check(s) FAILED.`}`);

@@ -59,9 +59,13 @@ export function generateScript(config: MapConfig, allRules: RuleSpec[]): string 
 
   add(
     heading('Load the boundary dataset'),
-    '# The GeoJSON is written into the in-browser filesystem once at start-up, so',
-    '# re-rendering never re-downloads it.',
-    'gdf = gpd.read_file("/data/us_counties.geojson", engine="fiona")',
+    '# The studio parses these boundaries once when Python starts and hands them over',
+    '# as BOUNDARIES, so re-rendering never re-reads the file.  Run this script on a',
+    '# desktop instead and it falls back to reading the GeoJSON from disk.',
+    'try:',
+    '    gdf = BOUNDARIES.copy()',
+    'except NameError:',
+    '    gdf = gpd.read_file("us_counties.geojson", engine="fiona")',
     '',
   );
 

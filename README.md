@@ -62,7 +62,7 @@ src/lib/pyscript.ts ─ config ─▶ Python source      ◀── single source
       │
       └───────────▶ src/worker/pyodide.worker.ts
                           │  loadPyodide() + loadPackage(['geopandas','matplotlib'])
-                          │  fetch /data/us_counties.geojson once ─▶ pyodide.FS
+                          │  fetch + parse the boundaries once ─▶ BOUNDARIES
                           │  runPythonAsync(script)
                           ▼
                     { base64 PNG, stats } ─▶ MapCanvas.svelte
@@ -78,14 +78,46 @@ drifted the first time either side changed.
 
 ### Why the worker boots once
 
-The worker stays alive for the life of the page, so a second render downloads
-nothing and re-reads the boundaries from the virtual filesystem. Because it keeps
-the last matplotlib `Figure` in its namespace, PNG-300 and SVG export are a
-re-`savefig` rather than a re-render.
+The worker stays alive for the life of the page, and it now does three things once
+that used to be paid repeatedly:
+
+- **The boundaries are parsed once.** `gpd.read_file` on the 3.79 MB GeoJSON
+  measured **0.6–0.8 s**, and the generated script used to call it on *every*
+  render. The worker parses it at start-up and exposes it as `BOUNDARIES`; the
+  generated script prefers that frame and falls back to reading the file, so it
+  still runs on a desktop. The same map costs **0.14–0.22 s** in the studio against
+  **0.7–0.95 s** standalone — that gap is the per-render cost this removes.
+- **The dataset download overlaps the runtime install.** The fetch is a 3.79 MB
+  download the browser handles off-thread, so it starts before `loadPyodide` and
+  is awaited only when the boundaries are needed — hiding essentially all of it
+  behind work that was happening anyway.
+- **Exports reuse the retained figure.** PNG-300 and SVG are a re-`savefig`, not a
+  re-render.
 
 Renders are serialised and only the **newest** queued configuration is computed —
 dragging a slider queues one job, not thirty. Every result carries an id, so a
 superseded render is discarded instead of flashing onto the canvas.
+
+### What is actually slow
+
+`scripts/profile_python.mjs` times every phase, because the expensive parts are
+not where they look:
+
+| Phase | Measured | Notes |
+| --- | --- | --- |
+| `import geopandas` | ~2.4 s | pulls pandas, shapely, pyproj and fiona |
+| `import matplotlib` + pyplot | ~1.3 s | |
+| `gpd.read_file` (3.79 MB) | ~0.6–0.8 s | now paid once, at boot |
+| `to_crs` (3,109 counties) | ~35 ms | negligible — not worth caching |
+| `representative_point` (all) | ~6 ms | negligible |
+| `apply(axis=1)` colouring | ~19 ms | a vectorised form saves 16 ms; not worth diverging from the original scripts |
+| plot + layout, Lower 48 | ~480 ms | 3,109 real polygon patches — close to inherent |
+| `savefig` png | ~100–165 ms | |
+
+So the Lower 48 render is about **0.8 s** and a single state about **0.2 s**, and
+the dominant costs are matplotlib drawing the polygons and the one-off imports.
+The boot's longest single step is `import geopandas`, which is why the import phase
+is reported in two labelled stages rather than appearing as a stalled bar.
 
 ---
 
