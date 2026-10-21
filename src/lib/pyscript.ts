@@ -57,6 +57,13 @@ export function generateScript(config: MapConfig, allRules: RuleSpec[]): string 
   const lines: string[] = [];
   const add = (...items: string[]) => lines.push(...items);
 
+  // The imports have to be emitted, not assumed.  The worker's harness imports
+  // geopandas and matplotlib before the script runs, so a script that merely
+  // *uses* gpd and plt executes fine in the studio -- and then fails with
+  // "NameError: name 'gpd' is not defined" the moment anyone copies it to a
+  // desktop, which is the whole point of the drawer.
+  add('import geopandas as gpd', 'import matplotlib.pyplot as plt', '');
+
   add(
     heading('Load the boundary dataset'),
     '# The studio parses these boundaries once when Python starts and hands them over',

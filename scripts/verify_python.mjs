@@ -232,26 +232,36 @@ base64.b64encode(_buffer.getvalue()).decode("ascii")
   report('SVG export', false, String(error).split('\n').slice(-2).join(' | '));
 }
 
-// The generated script prefers the studio's cached frame but must still run on a
-// desktop, so removing BOUNDARIES has to fall back to reading the GeoJSON.  This
-// is the test that keeps the drawer's promise that its script is runnable.
-console.log('\nStandalone fallback (the script run outside the studio)');
+// The script has to stand on its own, so it is run in a *fresh* namespace with no
+// gpd, no plt and no BOUNDARIES.  Testing it with the worker's namespace still
+// populated passes even when the generated script forgets its own imports -- which
+// is exactly the bug this now guards against.
+console.log('\nStandalone: the generated script in a clean namespace');
 try {
-  py.runPython('globals().pop("BOUNDARIES", None)');
-  // The fallback reads "us_counties.geojson" relative to the working directory.
   py.FS.writeFile('/home/pyodide/us_counties.geojson', bytes);
+  const fresh = py.globals.get('dict')();
   const standaloneMs = await timeIt(() =>
-    py.runPythonAsync(generateScript(baseConfig, scRules)),
+    py.runPythonAsync(generateScript(baseConfig, scRules), { globals: fresh }),
   );
-  const stats = JSON.parse(await py.runPythonAsync(STATS_PY));
+  const counts = JSON.parse(
+    await py.runPythonAsync(
+      `import json
+json.dumps({
+    "counties": int(len(subset)),
+    "unmatched": [n for _c, names, _s in rules for n in names
+                  if not (subset["NAME"].str.casefold() == n.casefold()).any()],
+})`,
+      { globals: fresh },
+    ),
+  );
   report(
-    'runs without BOUNDARIES defined',
-    stats.counties === 46 && stats.unmatched.length === 0,
-    `${stats.counties} counties in ${standaloneMs} ms (re-reads the file, as a desktop would)`,
+    'runs standalone in a clean namespace',
+    counts.counties === 46 && counts.unmatched.length === 0,
+    `${counts.counties} counties in ${standaloneMs} ms (imports and reads the file itself)`,
   );
 } catch (error) {
   report(
-    'standalone fallback',
+    'runs standalone in a clean namespace',
     false,
     String(error).split('\n').slice(-3).join(' | '),
   );

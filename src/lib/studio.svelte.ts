@@ -123,6 +123,33 @@ export class Studio {
   private client: PyodideClient | null = null;
   private awaitingRender: number | null = null;
   private awaitingExport: number | null = null;
+  private watchdog: ReturnType<typeof setTimeout> | null = null;
+
+  /**
+   * A render that has not answered in two minutes is not slow, it is stuck -- a
+   * CONUS render is about a second.  Without this the UI could sit on
+   * "Rendering in Python…" with no way out and nothing to report, which is
+   * exactly what happened when a throw escaped the request.
+   */
+  private static readonly RENDER_TIMEOUT_MS = 120_000;
+
+  private armWatchdog(id: number): void {
+    this.clearWatchdog();
+    this.watchdog = setTimeout(() => {
+      if (this.awaitingRender !== id) return;
+      this.awaitingRender = null;
+      this.fail(
+        'The Python worker did not answer. Reload the page to restart the runtime.',
+      );
+    }, Studio.RENDER_TIMEOUT_MS);
+  }
+
+  private clearWatchdog(): void {
+    if (this.watchdog !== null) {
+      clearTimeout(this.watchdog);
+      this.watchdog = null;
+    }
+  }
 
   async init(): Promise<void> {
     try {
@@ -148,12 +175,14 @@ export class Studio {
       onRender: (id, mime, base64, _script, stats) => {
         if (id === this.awaitingExport) {
           this.awaitingExport = null;
+          this.clearWatchdog();
           this.phase = 'ready';
           this.saveFile(mime, base64);
           return;
         }
         if (id !== this.awaitingRender) return; // superseded by a newer request
         this.awaitingRender = null;
+        this.clearWatchdog();
         this.image = { mime, base64 };
         this.stats = stats;
         this.phase = 'ready';
@@ -162,6 +191,7 @@ export class Studio {
         if (id !== null && id !== this.awaitingRender && id !== this.awaitingExport) return;
         this.awaitingRender = null;
         this.awaitingExport = null;
+        this.clearWatchdog();
         this.fail(message, traceback);
       },
     });
@@ -182,14 +212,37 @@ export class Studio {
     if (!this.client || !this.probe) return;
     this.failure = null;
     this.phase = 'rendering';
-    this.awaitingRender = this.client.render(this.config, this.rules);
+    try {
+      // `config` is a Svelte $state proxy, and postMessage's structured clone
+      // throws DataCloneError on a proxy.  That throw used to escape this method
+      // after `phase` had already been set to 'rendering', leaving the UI
+      // spinning forever with no error to show.  $state.snapshot hands the worker
+      // a plain deep copy instead.
+      const id = this.client.render($state.snapshot(this.config), this.rules);
+      this.awaitingRender = id;
+      this.armWatchdog(id);
+    } catch (error) {
+      this.fail(
+        `Could not send the map to the Python worker: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   }
 
   /** Export re-saves the retained figure in the worker, so the map is not recomputed. */
   download(format: 'png' | 'svg'): void {
     if (!this.client || !this.image) return;
     this.phase = 'exporting';
-    this.awaitingExport = this.client.export(format, format === 'png' ? 300 : 110);
+    try {
+      this.awaitingExport = this.client.export(format, format === 'png' ? 300 : 110);
+    } catch (error) {
+      this.fail(
+        `Could not start the export: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
   }
 
   private saveFile(mime: string, base64: string): void {

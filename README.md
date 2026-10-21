@@ -1,4 +1,4 @@
-![South Carolina counties with the upstate highlighted in red and two coastal counties in blue — rendered by geopandas and matplotlib in the browser](docs/preview.png)
+![Python Map Studio: the scope and highlight controls on the left, the rendered South Carolina choropleth in the middle, and the generated Python in the drawer below](docs/studio.png)
 
 # Python Map Studio
 
@@ -256,8 +256,34 @@ site build never runs it.
 node --experimental-strip-types scripts/verify_python.mjs docs/preview.png
 ```
 
-...additionally writes the default view out, which is how `docs/preview.png` at the
-top of this file is produced.
+...additionally writes the default view out, which is how `docs/preview.png` is
+produced — the raw matplotlib output on its own, with no UI around it.
+
+### End-to-end in a real browser
+
+```bash
+npx playwright install chromium   # once
+npm run e2e                       # builds, then drives the built site
+```
+
+This exists because of two bugs that **nothing else could see**. The Python harness
+was green through both of them, because in each case the Python was correct and the
+fault was in the handoff around it:
+
+- `render()` posted a Svelte `$state` proxy to the worker. Structured clone throws
+  `DataCloneError` on a proxy; the throw happened *after* the phase had been set to
+  `rendering` and escaped an event handler, so the UI spun forever with no error.
+- `generateScript()` used `gpd` and `plt` but **never emitted their imports**. It
+  ran in the studio only because the worker's harness imports both first — so the
+  drawer's script would have died with `NameError` the moment anyone copied it to a
+  desktop, which is the entire point of the drawer.
+
+The spec therefore asserts what a person actually sees: that a map appears, that
+re-rendering after a scope change produces a different one, that the drawer shows
+the imports and the cached-frame fast path, and that the console stayed clean.
+`scripts/verify_python.mjs` was also tightened: it now runs the generated script in
+a **fresh namespace** with no `gpd`, no `plt` and no `BOUNDARIES`, which is the
+test that would have caught the missing imports on its own.
 
 ### Reproducible builds
 

@@ -1,6 +1,11 @@
 node_modules/
 dist/
 .svelte-kit/
+# Playwright: run artefacts and the HTML report.
+test-results/
+playwright-report/
+
+
 
 # Build-script scratch space: the cached TIGERweb pages are ~14 MB and are never
 # needed in the repository (the simplified GeoJSON they produce is committed).
