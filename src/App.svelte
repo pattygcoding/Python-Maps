@@ -22,9 +22,45 @@
       <div
         class="flex flex-wrap items-center justify-between gap-4 border-b border-line/10 pb-5"
       >
-        <div class="flex items-center gap-3">
-          <span class="micro font-bold text-accent">PG</span>
-          <span class="micro text-fg-dim">/ Geospatial tooling</span>
+        <div class="flex items-center gap-3 sm:gap-4">
+          <!--
+            The portfolio escape hatch, matching the sibling subdomains byte for
+            byte: same size, chrome, glyph and copy as Arcade-PG-Website's
+            app/app.html.  The paths are inlined rather than taken from
+            lucide-svelte because that package's current House glyph has been
+            redesigned, and a differently-shaped icon would defeat the point of
+            the button reading as the same control across the sites.  Opening in a
+            new tab keeps a map that is mid-render from being thrown away.
+          -->
+          <a
+            href="https://pattygcoding.com"
+            target="_blank"
+            rel="noopener"
+            title="pattygcoding.com"
+            aria-label="Back to pattygcoding.com"
+            class="shrink-0 flex items-center justify-center w-9 h-9 rounded-md bg-ink-950 border border-line/10 text-fg-muted hover:text-accent hover:border-accent/40 transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+          </a>
+
+          <div class="flex items-center gap-3">
+            <span class="micro font-bold text-accent">PG</span>
+            <span class="micro text-fg-dim">/ Geospatial tooling</span>
+          </div>
         </div>
         <div class="flex items-center gap-3">
           <span class="micro hidden items-center gap-2 text-fg-muted sm:inline-flex">
