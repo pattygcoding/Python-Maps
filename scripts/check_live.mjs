@@ -49,6 +49,18 @@ try {
     shown.includes('import geopandas as gpd') && shown.includes('BOUNDARIES.copy()');
   console.log(`  ${runnable ? 'PASS' : 'FAIL'}  drawer script is self-contained`);
   ok &&= runnable;
+
+  // Layout: component CSS must not beat Tailwind's utilities, or the colour swatch
+  // stretches across the row and collapses the county textarea.
+  const swatch = await page.locator('input[type=color]').first().boundingBox();
+  const textarea = await page.locator('textarea').first().boundingBox();
+  const laidOut = (swatch?.width ?? 0) < 60 && (textarea?.width ?? 0) > 150;
+  console.log(
+    `  ${laidOut ? 'PASS' : 'FAIL'}  highlight row lays out (swatch ${Math.round(
+      swatch?.width ?? 0,
+    )}px, textarea ${Math.round(textarea?.width ?? 0)}px)`,
+  );
+  ok &&= laidOut;
 } catch (error) {
   console.log(`  FAIL  ${String(error).split('\n')[0]}`);
   ok = false;
