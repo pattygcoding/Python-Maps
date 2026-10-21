@@ -115,6 +115,18 @@ html[data-theme='light'] {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Everything below lives in Tailwind's `components` layer on purpose.
+
+   Unlayered CSS beats *every* layered rule, and Tailwind v4 puts its utilities in
+   `@layer utilities`.  Left unlayered, `.swatch { width: 100% }` therefore
+   silently overrode the `w-11` utility on the colour inputs -- stretching them
+   across the row and squashing the county textarea to a sliver.  Inside this
+   layer, utilities win, which is what the markup already assumed.
+--------------------------------------------------------------------------- */
+@layer components {
+
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -430,3 +442,5 @@ html[data-theme='light'] .code-surface .hljs-function {
     transition-duration: 0.01ms !important;
   }
 }
+}
+

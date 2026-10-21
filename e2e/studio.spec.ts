@@ -41,6 +41,19 @@ test('boots, renders, re-renders and keeps its console clean', async ({ page }) 
   // The probe reported real versions and found no missing glyphs.
   await expect(page.getByText('1.1.3')).toBeVisible();
 
+  // --- the highlight row lays out correctly -------------------------------
+  // A colour swatch and a county textarea share one flex row.  Because component
+  // CSS used to be unlayered it beat Tailwind's utilities, so `.swatch{width:100%}`
+  // overrode `w-11` and stretched the swatch across the row, collapsing the
+  // textarea to a sliver.  Asserting the actual boxes is the only way to catch a
+  // cascade bug like that.
+  const swatchBox = await page.locator('input[type=color]').first().boundingBox();
+  const textareaBox = await page.locator('textarea').first().boundingBox();
+  expect(swatchBox?.width ?? 0).toBeLessThan(60);
+  expect(swatchBox?.height ?? 0).toBeLessThan(60);
+  expect(textareaBox?.width ?? 0).toBeGreaterThan(150);
+  expect(textareaBox?.height ?? 0).toBeGreaterThan(50);
+
   // --- the drawer regenerates from the form -------------------------------
   await page.getByRole('button', { name: /View the Python code/ }).click();
   const code = page.locator('.code-surface');
@@ -65,7 +78,11 @@ test('boots, renders, re-renders and keeps its console clean', async ({ page }) 
   await page.getByText('Show county names').click();
   await expect(code).toContainText('representative_point');
 
-  // Refreshed on every run, so docs/studio.png always shows the current UI.
+  // Refreshed on every run, so docs/studio.png always shows the current UI.  Taken
+  // in the dark palette, which is the default, and flipping to it also proves the
+  // theme toggle works.
+  await page.getByRole('button', { name: /Toggle colour theme/ }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.screenshot({ path: 'docs/studio.png', fullPage: true });
 
   // --- re-render on the slowest path --------------------------------------
