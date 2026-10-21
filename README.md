@@ -314,12 +314,13 @@ wrong palette. Tailwind v4 is configured CSS-first through `@theme` (no
 
 ## The original scripts
 
-This repository began as two standalone scripts, and they are still here:
+This repository began as two standalone scripts, and they are still here — kept in
+`legacy/` now that the studio supersedes them, but untouched and still runnable:
 
 | Script | What it does |
 | --- | --- |
-| `us_county_map.py` | Every U.S. county, with selected counties coloured via `(NAME, STATEFP)` tuples |
-| `state_county_map.py` | A single state, with the upstate shaded red and `centroid` labels |
+| `legacy/us_county_map.py` | Every U.S. county, with selected counties coloured via `(NAME, STATEFP)` tuples |
+| `legacy/state_county_map.py` | A single state, with the upstate shaded red and `centroid` labels |
 
 They are the direct ancestors of the studio's default view, and the code the
 drawer generates stays deliberately close to them — same `assign_color(row)`
@@ -327,7 +328,7 @@ idiom, same `GeoDataFrame.plot()` call. Run them locally with:
 
 ```bash
 pip install geopandas matplotlib requests
-python state_county_map.py
+python legacy/state_county_map.py
 ```
 
 Two differences worth noting if you compare them side by side: the studio matches

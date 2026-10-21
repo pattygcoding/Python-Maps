@@ -20,8 +20,8 @@ import type {
 } from './types';
 import { PyodideClient } from './workerClient';
 
-/** Mirrors the original state_county_map.py example, so the default view is the
- *  same map the repository's scripts produce. */
+/** Mirrors the legacy/state_county_map.py example, so the default view is the
+ *  same map the repository's original script produced. */
 export const DEFAULT_CONFIG: MapConfig = {
   scope: 'state',
   stateFips: '45',
