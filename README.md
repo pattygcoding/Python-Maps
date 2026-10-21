@@ -227,6 +227,21 @@ node --experimental-strip-types scripts/verify_python.mjs docs/preview.png
 ...additionally writes the default view out, which is how `docs/preview.png` at the
 top of this file is produced.
 
+### Reproducible builds
+
+`.gitattributes` pins `eol=lf` so a Windows working tree and the Linux CI runner
+hold the same bytes. Measured across the two platforms, the built JS and worker
+chunks come out **byte-identical**; the only asset that differs is the emitted CSS,
+by one byte, because Tailwind's platform-native binary rounds a colour component
+differently (`lab(... 60.7449)` on Windows vs `lab(... 60.745)` on Linux). That is
+a third-party toolchain artefact, is visually identical, and is recorded in
+`.gitattributes` so it does not get re-investigated.
+
+The reason the attribute matters is the committed dataset: Python's text mode
+translates `"\n"` to CRLF on Windows, so without `newline="\n"` in `build_data.py`
+the same regeneration produces a GeoJSON that differs by its trailing byte
+depending on which machine ran it.
+
 ## Deployment
 
 Published to **<https://pythonmaps.pattygcoding.com/>**.

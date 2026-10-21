@@ -1,15 +1,19 @@
 # Normalise line endings explicitly rather than relying on each machine's
 # core.autocrlf.  Without this, a Windows working tree holds CRLF while the Linux
-# CI runner holds LF, so the *same commit* builds to different asset hashes --
-# measured as a one-byte difference in the emitted CSS and in the committed
-# GeoJSON's trailing newline.  eol=lf makes both platforms see identical bytes.
+# CI runner holds LF.
+#
+# This is about committed *data* determinism, not bundle hashes: measured, the
+# built JS and worker chunks are byte-identical across the two platforms.  The
+# only bundle difference is the emitted CSS, and that comes from Tailwind's
+# platform-native binary rounding a float differently (lab(...) 60.7449 on Windows
+# vs 60.745 on Linux) -- not from line endings.  Recorded here so nobody re-chases
+# it.  The real gain below is the GeoJSON's trailing newline, which otherwise
+# differs by a byte depending on which machine regenerated it.
 * text=auto eol=lf
 
-# Committed data and images are generated artefacts.  The GeoJSON is forced to LF
-# rather than left alone, because Python's text mode translates "\n" to CRLF on
-# Windows: without this the committed dataset differs by a byte depending on which
-# machine last regenerated it.  build_data.py also opens with newline="\n" so both
-# ends agree.
+# Committed data and images are generated artefacts, so the data file is pinned to
+# LF rather than left to whatever Python's text mode produced, and binaries are
+# marked so git never rewrites a byte of them.
 *.geojson text eol=lf
 *.png -text
 *.wasm -text

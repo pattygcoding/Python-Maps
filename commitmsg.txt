@@ -1,0 +1,12 @@
+Correct the reproducible-build note: line endings were not the CSS cause
+
+The previous commit attributed the platform-dependent CSS hash to line endings.
+Measuring both builds shows that was wrong: the emitted JS and worker chunks are
+byte-identical across platforms, and the CSS differs by exactly one byte because
+Tailwind's platform-native binary rounds a colour component differently --
+lab(... 60.7449) on Windows versus lab(... 60.745) on Linux.
+
+eol=lf is still worth keeping, since it is what makes the committed dataset
+deterministic, so the attribute stays and its comment now records what was
+actually measured rather than what I first assumed. The README notes the finding
+as well, so it does not get re-investigated later.
