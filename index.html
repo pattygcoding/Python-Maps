@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Python Map Studio — U.S. County Choropleths in the Browser</title>
+    <link rel="canonical" href="https://pythonmaps.pattygcoding.com/" />
+    <meta name="theme-color" content="#05070c" />
+    <meta name="author" content="Patrick Goodwin" />
+    <meta
+      name="description"
+      content="Build and style U.S. county choropleth maps without writing code — while real geopandas, shapely and matplotlib run entirely in your browser through Pyodide and WebAssembly."
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Patrick Goodwin" />
+    <meta property="og:title" content="Python Map Studio" />
+    <meta
+      property="og:description"
+      content="A zero-backend map studio: real geopandas and matplotlib running client-side in WebAssembly."
+    />
+    <meta property="og:url" content="https://pythonmaps.pattygcoding.com/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Python Map Studio" />
+    <meta
+      name="twitter:description"
+      content="A zero-backend map studio: real geopandas and matplotlib running client-side in WebAssembly."
+    />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <!--
+      Pick the theme before first paint, so the page never flashes the wrong
+      palette.  Same approach and storage key shape as the arcade site.
+    -->
+    <script>
+      (function () {
+        var stored = null;
+        try {
+          stored = localStorage.getItem('python-maps-theme');
+        } catch (error) {
+          stored = null;
+        }
+        var prefersLight =
+          window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        document.documentElement.setAttribute('data-theme', stored || (prefersLight ? 'light' : 'dark'));
+      })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+    <noscript>Python Map Studio needs JavaScript (and WebAssembly) to run.</noscript>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.svelte-kit/
+
+# Build-script scratch space: the cached TIGERweb pages are ~14 MB and are never
+# needed in the repository (the simplified GeoJSON they produce is committed).
+scripts/.cache/
+scripts/*.log
+scripts/*.txt
+scripts/__pycache__/
+
+__pycache__/
+*.pyc
+
+.DS_Store
+.vscode/

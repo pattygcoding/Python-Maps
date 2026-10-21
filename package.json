@@ -1,0 +1,31 @@
+{
+  "name": "python-maps",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "In-browser Python geospatial map studio -- geopandas + matplotlib over Pyodide/WASM.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "data": "python scripts/build_data.py",
+    "data:inspect": "python scripts/inspect_data.py",
+    "verify:python": "node --experimental-strip-types scripts/verify_python.mjs",
+    "verify": "npm run check && npm run build && npm run verify:python"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "pyodide": "^314.0.7",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.7",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.4"
+  },
+  "dependencies": {
+    "highlight.js": "^11.12.0",
+    "lucide-svelte": "^1.0.1"
+  }
+}

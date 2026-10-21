@@ -1,0 +1,398 @@
+{
+  "source": "U.S. Census Bureau FIPS 5-2",
+  "default": "conus",
+  "states": [
+    {
+      "fips": "01",
+      "abbr": "AL",
+      "name": "Alabama",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "02",
+      "abbr": "AK",
+      "name": "Alaska",
+      "conus": false,
+      "territory": false
+    },
+    {
+      "fips": "04",
+      "abbr": "AZ",
+      "name": "Arizona",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "05",
+      "abbr": "AR",
+      "name": "Arkansas",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "06",
+      "abbr": "CA",
+      "name": "California",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "08",
+      "abbr": "CO",
+      "name": "Colorado",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "09",
+      "abbr": "CT",
+      "name": "Connecticut",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "10",
+      "abbr": "DE",
+      "name": "Delaware",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "11",
+      "abbr": "DC",
+      "name": "District of Columbia",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "12",
+      "abbr": "FL",
+      "name": "Florida",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "13",
+      "abbr": "GA",
+      "name": "Georgia",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "15",
+      "abbr": "HI",
+      "name": "Hawaii",
+      "conus": false,
+      "territory": false
+    },
+    {
+      "fips": "16",
+      "abbr": "ID",
+      "name": "Idaho",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "17",
+      "abbr": "IL",
+      "name": "Illinois",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "18",
+      "abbr": "IN",
+      "name": "Indiana",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "19",
+      "abbr": "IA",
+      "name": "Iowa",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "20",
+      "abbr": "KS",
+      "name": "Kansas",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "21",
+      "abbr": "KY",
+      "name": "Kentucky",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "22",
+      "abbr": "LA",
+      "name": "Louisiana",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "23",
+      "abbr": "ME",
+      "name": "Maine",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "24",
+      "abbr": "MD",
+      "name": "Maryland",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "25",
+      "abbr": "MA",
+      "name": "Massachusetts",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "26",
+      "abbr": "MI",
+      "name": "Michigan",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "27",
+      "abbr": "MN",
+      "name": "Minnesota",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "28",
+      "abbr": "MS",
+      "name": "Mississippi",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "29",
+      "abbr": "MO",
+      "name": "Missouri",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "30",
+      "abbr": "MT",
+      "name": "Montana",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "31",
+      "abbr": "NE",
+      "name": "Nebraska",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "32",
+      "abbr": "NV",
+      "name": "Nevada",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "33",
+      "abbr": "NH",
+      "name": "New Hampshire",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "34",
+      "abbr": "NJ",
+      "name": "New Jersey",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "35",
+      "abbr": "NM",
+      "name": "New Mexico",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "36",
+      "abbr": "NY",
+      "name": "New York",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "37",
+      "abbr": "NC",
+      "name": "North Carolina",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "38",
+      "abbr": "ND",
+      "name": "North Dakota",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "39",
+      "abbr": "OH",
+      "name": "Ohio",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "40",
+      "abbr": "OK",
+      "name": "Oklahoma",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "41",
+      "abbr": "OR",
+      "name": "Oregon",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "42",
+      "abbr": "PA",
+      "name": "Pennsylvania",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "44",
+      "abbr": "RI",
+      "name": "Rhode Island",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "45",
+      "abbr": "SC",
+      "name": "South Carolina",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "46",
+      "abbr": "SD",
+      "name": "South Dakota",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "47",
+      "abbr": "TN",
+      "name": "Tennessee",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "48",
+      "abbr": "TX",
+      "name": "Texas",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "49",
+      "abbr": "UT",
+      "name": "Utah",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "50",
+      "abbr": "VT",
+      "name": "Vermont",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "51",
+      "abbr": "VA",
+      "name": "Virginia",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "53",
+      "abbr": "WA",
+      "name": "Washington",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "54",
+      "abbr": "WV",
+      "name": "West Virginia",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "55",
+      "abbr": "WI",
+      "name": "Wisconsin",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "56",
+      "abbr": "WY",
+      "name": "Wyoming",
+      "conus": true,
+      "territory": false
+    },
+    {
+      "fips": "60",
+      "abbr": "AS",
+      "name": "American Samoa",
+      "conus": false,
+      "territory": true
+    },
+    {
+      "fips": "66",
+      "abbr": "GU",
+      "name": "Guam",
+      "conus": false,
+      "territory": true
+    },
+    {
+      "fips": "69",
+      "abbr": "MP",
+      "name": "Northern Mariana Islands",
+      "conus": false,
+      "territory": true
+    },
+    {
+      "fips": "72",
+      "abbr": "PR",
+      "name": "Puerto Rico",
+      "conus": false,
+      "territory": true
+    },
+    {
+      "fips": "78",
+      "abbr": "VI",
+      "name": "U.S. Virgin Islands",
+      "conus": false,
+      "territory": true
+    }
+  ]
+}

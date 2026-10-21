@@ -1,0 +1,2 @@
+# Prevents Jekyll from processing the published output.  Harmless with a GitHub
+# Actions deployment, but it keeps a branch-based deployment working too.

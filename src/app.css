@@ -1,0 +1,432 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Palette
+   ---------------------------------------------------------------------------
+   Token values are taken from the arcade site (Arcade-PG-Website/src/styles.css)
+   so the two properties read as one family: a navy canvas, a mint accent, Inter
+   for prose and JetBrains Mono for small uppercase labels.  Dark is the default
+   and [data-theme="light"] overrides every channel, so flipping one attribute on
+   <html> re-themes the whole application.
+--------------------------------------------------------------------------- */
+:root {
+  color-scheme: dark;
+  --ink-950: 5 7 12;
+  --ink-900: 10 14 21;
+  --ink-850: 13 18 25;
+  --ink-800: 17 24 35;
+  --ink-700: 26 34 48;
+  --ink-600: 38 48 63;
+  --fg: 232 236 234;
+  --fg-strong: 242 245 243;
+  --fg-soft: 195 202 211;
+  --fg-muted: 138 147 160;
+  --fg-dim: 107 116 130;
+  --gutter: 74 84 98;
+  --hint: 92 100 112;
+  --console: 4 6 10;
+  --line: 255 255 255;
+  --accent: 141 235 196;
+  --on-accent: 5 7 12;
+  --sel-bg: rgba(141, 235, 196, 0.25);
+  --sel-fg: #f2f5f3;
+  --glow-a: rgba(141, 235, 196, 0.07);
+  --glow-b: rgba(105, 140, 200, 0.06);
+}
+html[data-theme='light'] {
+  color-scheme: light;
+  --ink-950: 244 246 245;
+  --ink-900: 255 255 255;
+  --ink-850: 255 255 255;
+  --ink-800: 238 241 240;
+  --ink-700: 203 211 208;
+  --ink-600: 166 178 174;
+  --fg: 28 35 43;
+  --fg-strong: 11 16 21;
+  --fg-soft: 58 67 79;
+  --fg-muted: 91 100 114;
+  --fg-dim: 111 120 133;
+  --gutter: 160 169 182;
+  --hint: 154 163 175;
+  --console: 238 241 240;
+  --line: 15 23 34;
+  --accent: 12 150 106;
+  --sel-bg: rgba(12, 150, 106, 0.2);
+  --sel-fg: #0b1015;
+  --glow-a: rgba(12, 150, 106, 0.1);
+  --glow-b: rgba(96, 132, 196, 0.12);
+}
+
+/* Expose the channels to Tailwind.  Each var resolves through the token above at
+   use time, so opacity modifiers (bg-ink-950/80) and theme switching both work. */
+@theme {
+  --color-ink-950: rgb(var(--ink-950));
+  --color-ink-900: rgb(var(--ink-900));
+  --color-ink-850: rgb(var(--ink-850));
+  --color-ink-800: rgb(var(--ink-800));
+  --color-ink-700: rgb(var(--ink-700));
+  --color-ink-600: rgb(var(--ink-600));
+  --color-fg: rgb(var(--fg));
+  --color-fg-strong: rgb(var(--fg-strong));
+  --color-fg-soft: rgb(var(--fg-soft));
+  --color-fg-muted: rgb(var(--fg-muted));
+  --color-fg-dim: rgb(var(--fg-dim));
+  --color-line: rgb(var(--line));
+  --color-gutter: rgb(var(--gutter));
+  --color-hint: rgb(var(--hint));
+  --color-console: rgb(var(--console));
+  --color-accent: rgb(var(--accent));
+  --color-on-accent: rgb(var(--on-accent));
+  --color-mint-400: #8debc4;
+  --color-mint-500: #6fd9af;
+  --color-mint-600: #4fb894;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Theme-aware variants, so a few spots can branch without extra markup. */
+@custom-variant dark (&:where(html[data-theme='dark'] *));
+@custom-variant light (&:where(html[data-theme='light'] *));
+
+@layer base {
+  html {
+    height: 100%;
+  }
+  body {
+    min-height: 100%;
+    margin: 0;
+    color: rgb(var(--fg));
+    background-color: rgb(var(--ink-950));
+    background-image:
+      radial-gradient(1100px 520px at 78% -8%, var(--glow-a), transparent 65%),
+      radial-gradient(900px 480px at 8% 108%, var(--glow-b), transparent 70%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background: var(--sel-bg);
+    color: var(--sel-fg);
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--ink-950));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--ink-700));
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--ink-600));
+}
+
+/* ===========================================================================
+   Components
+   ======================================================================== */
+
+/* Small uppercase mono label: the brand's micro-typography voice. */
+.micro {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.panel {
+  background: rgb(var(--ink-900) / 0.72);
+  border: 1px solid rgb(var(--line) / 0.09);
+  border-radius: 14px;
+  backdrop-filter: blur(6px);
+}
+
+.accent-dot::after {
+  content: '.';
+  color: rgb(var(--accent));
+}
+
+/* ---------------------------------------------------------------------------
+   Form controls
+   Native inputs are re-styled once here rather than repeating utilities, since
+   every control shares the same surface, border and focus treatment.
+--------------------------------------------------------------------------- */
+.ctl {
+  width: 100%;
+  background: rgb(var(--console));
+  color: rgb(var(--fg));
+  border: 1px solid rgb(var(--line) / 0.14);
+  border-radius: 9px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+.ctl:hover {
+  border-color: rgb(var(--line) / 0.22);
+}
+.ctl:focus {
+  outline: none;
+  border-color: rgb(var(--accent));
+  box-shadow: 0 0 0 3px rgb(var(--accent) / 0.16);
+}
+.ctl::placeholder {
+  color: rgb(var(--fg-dim));
+}
+textarea.ctl {
+  resize: vertical;
+  min-height: 4.25rem;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+select.ctl {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, rgb(var(--fg-muted)) 50%),
+    linear-gradient(135deg, rgb(var(--fg-muted)) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% + 1px),
+    calc(100% - 11px) calc(50% + 1px);
+  background-size:
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
+}
+select.ctl option {
+  background: rgb(var(--ink-900));
+  color: rgb(var(--fg));
+}
+
+/* Range slider, matched to the accent. */
+input[type='range'].ctl {
+  padding: 0;
+  border: none;
+  background: transparent;
+  height: 1.5rem;
+  cursor: pointer;
+}
+input[type='range'].ctl::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgb(var(--line) / 0.18);
+}
+input[type='range'].ctl::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: rgb(var(--accent));
+  border: 2px solid rgb(var(--ink-900));
+}
+input[type='range'].ctl::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgb(var(--line) / 0.18);
+}
+input[type='range'].ctl::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgb(var(--accent));
+  border: 2px solid rgb(var(--ink-900));
+}
+input[type='range'].ctl:focus {
+  box-shadow: none;
+}
+
+/* Native colour well, squared off to match the surrounding controls. */
+input[type='color'].swatch {
+  appearance: none;
+  width: 100%;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid rgb(var(--line) / 0.14);
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type='color'].swatch::-webkit-color-swatch-wrapper {
+  padding: 3px;
+}
+input[type='color'].swatch::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+input[type='color'].swatch::-moz-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+input[type='checkbox'] {
+  accent-color: rgb(var(--accent));
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------------
+   Buttons
+--------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1px solid rgb(var(--line) / 0.14);
+  background: rgb(var(--ink-800) / 0.6);
+  color: rgb(var(--fg));
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    opacity 140ms ease;
+}
+.btn:hover:not(:disabled) {
+  background: rgb(var(--ink-700) / 0.75);
+  border-color: rgb(var(--line) / 0.24);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: rgb(var(--accent));
+  border-color: rgb(var(--accent));
+  color: rgb(var(--on-accent));
+}
+.btn-primary:hover:not(:disabled) {
+  background: rgb(var(--accent) / 0.88);
+  border-color: rgb(var(--accent) / 0.88);
+}
+.btn-icon {
+  padding: 0.45rem;
+  border-radius: 8px;
+}
+
+/* ---------------------------------------------------------------------------
+   Preview surface + skeleton
+--------------------------------------------------------------------------- */
+.map-frame {
+  background: rgb(var(--console));
+  border: 1px solid rgb(var(--line) / 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.skeleton {
+  background: linear-gradient(
+    100deg,
+    rgb(var(--ink-800)) 30%,
+    rgb(var(--ink-700)) 50%,
+    rgb(var(--ink-800)) 70%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-sweep 1.35s linear infinite;
+}
+@keyframes skeleton-sweep {
+  from {
+    background-position: 180% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise-in {
+  animation: rise-in 320ms ease both;
+}
+
+/* ---------------------------------------------------------------------------
+   Code drawer
+--------------------------------------------------------------------------- */
+.code-surface {
+  background: rgb(var(--console));
+  color: rgb(var(--fg-soft));
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.65;
+  tab-size: 4;
+}
+.code-surface pre {
+  margin: 0;
+}
+.code-surface code {
+  display: block;
+  white-space: pre;
+}
+.code-surface .hljs-keyword,
+.code-surface .hljs-built_in,
+.code-surface .hljs-literal {
+  color: #8debc4;
+}
+.code-surface .hljs-string {
+  color: #f0b57a;
+}
+.code-surface .hljs-comment {
+  color: rgb(var(--fg-dim));
+  font-style: italic;
+}
+.code-surface .hljs-number {
+  color: #9db8f0;
+}
+.code-surface .hljs-title,
+.code-surface .hljs-function {
+  color: #d5e5c0;
+}
+.code-surface .hljs-params,
+.code-surface .hljs-variable {
+  color: rgb(var(--fg));
+}
+
+html[data-theme='light'] .code-surface .hljs-keyword,
+html[data-theme='light'] .code-surface .hljs-built_in,
+html[data-theme='light'] .code-surface .hljs-literal {
+  color: #0d7f5c;
+}
+html[data-theme='light'] .code-surface .hljs-string {
+  color: #9a5b12;
+}
+html[data-theme='light'] .code-surface .hljs-number {
+  color: #2f5bab;
+}
+html[data-theme='light'] .code-surface .hljs-title,
+html[data-theme='light'] .code-surface .hljs-function {
+  color: #4a6015;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .rise-in {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
