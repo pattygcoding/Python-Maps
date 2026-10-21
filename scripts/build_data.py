@@ -457,7 +457,7 @@ def write_states(path: Path) -> None:
             for fips, (abbr, name) in sorted(STATES.items())
         ],
     }
-    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"  wrote {path.relative_to(REPO_ROOT)} ({len(STATES)} entries)")
 
 
@@ -611,7 +611,10 @@ def main() -> None:
     validate(features)
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    with args.out.open("w", encoding="utf-8") as handle:
+    # newline="\n" keeps the output byte-identical on Windows and Linux.  Without it
+    # Python's text mode writes CRLF here and LF on CI, so the same commit would
+    # carry a dataset that differs by a byte depending on who regenerated it.
+    with args.out.open("w", encoding="utf-8", newline="\n") as handle:
         json.dump(
             {"type": "FeatureCollection", "features": features},
             handle,
